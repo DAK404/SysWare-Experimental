@@ -3,10 +3,10 @@
 
 start:
 
-    mov bp, HEADER_MESSAGE      ; Load the address of the initialization message
+    mov si, HEADER_MESSAGE      ; Load the address of the initialization message
     call PrintString            ; Print the initialization message
 
-    mov bp, INITIALIZE_REGISTERS; Load the address of the initialization message
+    mov si, INITIALIZE_REGISTERS; Load the address of the initialization message
     call PrintString            ; Print the initialization message
 
     xor ax, ax                  ; Clear AX register
@@ -17,7 +17,7 @@ start:
 
 TestDiskExtension:
 
-    mov bp, CHECK_DES_CAPABILITY ; Load the address of the DES capability check message
+    mov si, CHECK_DES_CAPABILITY ; Load the address of the DES capability check message
     call PrintString             ; Print the DES capability check message
 
     mov [DriveId], dl           ; Save drive ID from DL register
@@ -28,12 +28,12 @@ TestDiskExtension:
     cmp bx, 0xaa55              ; Check if BIOS supports extensions
     jne NotSupported            ; Jump if not equal (extensions not supported)
 
-    mov bp, DES_SUPPORTED       ; Load the address of the DES supported message
+    mov si, DES_SUPPORTED       ; Load the address of the DES supported message
     call PrintString            ; Print the DES supported message
 
 StartBootLoader:
 
-    mov bp, START_BOOTLOADER    ; Load the address of the bootloader start message
+    mov si, START_BOOTLOADER    ; Load the address of the bootloader start message
     call PrintString            ; Print the bootloader start message
 
     mov si, ReadPacket          ; Load address of ReadPacket structure
@@ -48,26 +48,26 @@ StartBootLoader:
     int 0x13                    ; Call BIOS interrupt
     jc ReadError                ; Jump if carry flag is set (error)
 
-    mov bp, FOOTER_MESSAGE      ; Load the address of the initialization message
+    mov si, FOOTER_MESSAGE      ; Load the address of the initialization message
     call PrintString            ; Print the initialization message
 
-    mov bp, BOOTLOADER_STARTED  ; Load the address of the bootloader started message
+    mov si, BOOTLOADER_STARTED  ; Load the address of the bootloader started message
     call PrintString            ; Print the bootloader started message
 
     jmp 0x7e00                  ; Jump to bootloader code
 
 ReadError:
-    mov bp, LBA_UNSUPPORTED   ; Load the address of the LBA not supported message
+    mov si, LBA_UNSUPPORTED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     jmp End
 
 NotSupported:
-    mov bp, DES_UNSUPPORTED   ; Load the address of the DES not supported message
+    mov si, DES_UNSUPPORTED   ; Load the address of the DES not supported message
     call PrintString            ; Print the DES not supported message
     jmp End
 
 UnknownBootError:
-    mov bp, GENERIC_ERROR       ; Load the address of the generic error message
+    mov si, GENERIC_ERROR       ; Load the address of the generic error message
     call PrintString            ; Print the generic error message
     jmp End
 
@@ -77,7 +77,6 @@ End:
 
 PrintString:
     pusha                       ; Save all registers
-    mov si, bp                  ; Load the address of the string
 PrintLoop:
     lodsb                       ; Load byte at DS:SI into AL and increment SI
     cmp al, 0                   ; Compare AL with null terminator

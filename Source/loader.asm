@@ -4,7 +4,7 @@
 start:
     mov [DriveId], dl           ; Save the drive ID from DL register
 
-    mov bp, CHECK_CPU_ID_SUPPORT; Load the address of the LBA not supported message
+    mov si, CHECK_CPU_ID_SUPPORT; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     ; --- CHECK CPUID SUPPORT --- ;
@@ -13,33 +13,33 @@ start:
     cmp eax, 0x80000001         ; Compare EAX with 0x80000001
     jb CPUIDNotSupported        ; Jump to NotSupport if EAX is below 0x80000001
 
-    mov bp, CPU_ID_SUPPORTED    ; Load the address of the LBA not supported message
+    mov si, CPU_ID_SUPPORTED    ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     ; --- CHECK LONG MODE SUPPORT --- ;
-    mov bp, CHECK_LONG_MODE_SUPPORT; Load the address of the LBA not supported message
+    mov si, CHECK_LONG_MODE_SUPPORT; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     mov eax, 0x80000001         ; Set EAX to 0x80000001 to get extended processor info
     cpuid                       ; Call CPUID instruction
     test edx, (1 << 29)         ; Test if bit 29 of EDX is set (long mode support)
     jz LongModeNotSupported     ; Jump to LongModeNotSupported if bit 29 is not set
 
-    mov bp, LONG_MODE_SUPPORTED; Load the address of the LBA not supported message
+    mov si, LONG_MODE_SUPPORTED; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     ; --- CHECK 1G PAGE SUPPORT --- ;
-    mov bp, PAGE_1G_SUPPORT_CHECK; Load the address of the LBA not supported message
+    mov si, PAGE_1G_SUPPORT_CHECK; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     test edx, (1 << 26)         ; Test if bit 26 of EDX is set (1G Page support)
     jz Page1GNotSupported       ; Jump to 1GPageNotSupported if bit 26 is not set
 
-    mov bp, PAGE_1G_SUPPORTED   ; Load the address of the LBA not supported message
+    mov si, PAGE_1G_SUPPORTED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
 StartLoader:
 
-    mov bp, START_LOADER        ; Load the address of the LBA not supported message
+    mov si, START_LOADER        ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     mov si, ReadPacket          ; Load address of ReadPacket structure
@@ -56,7 +56,7 @@ StartLoader:
 
 GetMemInfoStart:
 
-    mov bp, INITIALIZE_GET_MEMORY_INFO     ; Load the address of the LBA not supported message
+    mov si, INITIALIZE_GET_MEMORY_INFO     ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     mov eax, 0xe820             ; Set EAX to 0xe820 for memory map
@@ -69,7 +69,7 @@ GetMemInfoStart:
 
 GetMemInfo:
 
-    mov bp, GET_MEMORY_INFO; Load the address of the LBA not supported message
+    mov si, GET_MEMORY_INFO; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     add edi, 20                 ; Move to the next memory map entry
@@ -84,12 +84,12 @@ GetMemInfo:
 
 GetMemDone:
 
-    mov bp, GET_MEMORY_INFO_FINISHED; Load the address of the LBA not supported message
+    mov si, GET_MEMORY_INFO_FINISHED; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
 TestA20:
 
-    mov bp, TEST_A20_LINE       ; Load the address of the LBA not supported message
+    mov si, TEST_A20_LINE       ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     mov ax, 0xffff              ; Set AX to 0xffff
@@ -100,43 +100,48 @@ TestA20:
     mov word [0x7c00], 0xb200   ; Write 0xb200 to memory at 0x7c00
     cmp word [es:0x7c10], 0xb200 ; Compare with memory at ES:0x7c10
 
-    mov bp, A20_LINE_UNSUPPORTED ; Load the address of the LBA not supported message
+    mov si, A20_LINE_UNSUPPORTED ; Load the address of the LBA not supported message
     call PrintString             ; Print the LBA not supported message
 
     je End                      ; Jump to End if equal
     
 SetA20LineDone:
 
-    mov bp, A20_LINE_SUPPORTED  ; Load the address of the LBA not supported message
+    mov si, A20_LINE_SUPPORTED  ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
 
     xor ax, ax                  ; Clear AX
     mov es, ax                  ; Set ES to 0
 
+TestVideoMode:
+
+    mov si, TEST_VIDEO_MODE
+    call PrintStringVideoMode
     jmp End
 
+
 CPUIDNotSupported:
-    mov bp, CPU_ID_UNSUPPORTED   ; Load the address of the LBA not supported message
+    mov si, CPU_ID_UNSUPPORTED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     jmp End
 
 LongModeNotSupported:
-    mov bp, LONG_MODE_UNSUPPORTED   ; Load the address of the LBA not supported message
+    mov si, LONG_MODE_UNSUPPORTED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     jmp End
 
 Page1GNotSupported:
-    mov bp, PAGE_1G_UNSUPPORTED   ; Load the address of the LBA not supported message
+    mov si, PAGE_1G_UNSUPPORTED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     jmp End
 
 ReadError:
-    mov bp, LBA_UNSUPPORTED   ; Load the address of the LBA not supported message
+    mov si, LBA_UNSUPPORTED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     jmp End
 
 GetMemoryInfoFailed:
-    mov bp, GET_MEMORY_INFO_FAILED   ; Load the address of the LBA not supported message
+    mov si, GET_MEMORY_INFO_FAILED   ; Load the address of the LBA not supported message
     call PrintString            ; Print the LBA not supported message
     jmp End
 
@@ -144,9 +149,35 @@ End:
     hlt                         ; Halt the CPU
     jmp End                     ; Infinite loop to halt
 
+; --- VIDEO MODE PRINT LABELS --- ;
+
+PrintStringVideoMode:
+    pusha
+    mov ax, 0xb800
+    mov es, ax
+    xor di, di
+
+PrintStringVideoModeLoop:
+    mov al, [si]
+    cmp al, 0
+    je EndPrint
+
+    mov [es:di], al
+    mov byte [es:di+1], 0xa
+
+    add di, 2
+    add si, 1
+    jmp PrintStringVideoModeLoop
+
+EndPrint:
+    popa
+    xor si, si
+    ret
+
+; --- BIOS PRINT LABELS --- ;
+
 PrintString:
     pusha                       ; Save all registers
-    mov si, bp                  ; Load the address of the string
 PrintLoop:
     lodsb                       ; Load byte at DS:SI into AL and increment SI
     cmp al, 0                   ; Compare AL with null terminator
@@ -180,6 +211,8 @@ GET_MEMORY_INFO:            db "> CHECKING: Memory Information", 0
 GET_MEMORY_INFO_FINISHED:   db "[  DONE  ] Fetch Memory Information", 0
 TEST_A20_LINE:              db "> CHECKING: A20 Line", 0
 A20_LINE_SUPPORTED:         db "[  DONE  ] A20 Line: ENABLED", 0
+SET_VIDEO_MODE:             db "[  DONE  ] Set Video Mode -> Text Mode", 0
+TEST_VIDEO_MODE:            db "[  DONE  ] Text Video Mode: ENABLED",0
 
 ; --- LOAD ERROR MESSAGES --- ; : Messages to be printed onto the screen to denote any errors (null-terminated)
 CPU_ID_UNSUPPORTED:         db "[ FAILED ] CPUID 0x80000001 UNSUPPORTED", 0 
