@@ -42,8 +42,8 @@ Trap:
     push r14
     push r15
 
-    inc byte[0xb8000]          ; Increment the value at memory address 0xb8000 (for visual feedback)
-    mov byte[0xb8001],0xe      ; Set color attribute (light yellow text) for output at 0xb8000
+    ; inc byte[0xb8000]          ; Increment the value at memory address 0xb8000 (for visual feedback)
+    ; mov byte[0xb8001],0xe      ; Set color attribute (light yellow text) for output at 0xb8000
 
     mov rdi, rsp               ; Pass current stack pointer to the handler
     call handler               ; Call the external handler function

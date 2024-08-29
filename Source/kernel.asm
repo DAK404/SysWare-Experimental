@@ -28,7 +28,7 @@ Gdt64Ptr: dw Gdt64Len-1      ; GDT length minus 1 (for the `lgdt` instruction)
 
 Tss:                         ; Task State Segment (TSS) structure
     dd 0                     ; Reserved
-    dq 0x190000              ; Stack pointer (top of stack)
+    dq 0xffff800000190000    ; Stack pointer (top of stack)
     times 88 db 0            ; Reserved and other fields (zeroed out)
     dd TssLen                ; TSS length field
 
@@ -39,17 +39,19 @@ extern KMain                 ; Declare external function KMain
 global start                 ; Make 'start' globally accessible
 
 start:
-    lgdt [Gdt64Ptr]          ; Load the 64-bit GDT with the lgdt instruction
+    mov rax, Gdt64Ptr
+    lgdt [rax]          ; Load the 64-bit GDT with the lgdt instruction
 
 SetTss:                      ; Set up the TSS descriptor
     mov rax, Tss             ; Load the address of the TSS into RAX
-    mov [TssDesc+2], ax      ; Set the lower 16 bits of the TSS base in the descriptor
+    mov rdi, TssDesc
+    mov [rdi+2], ax      ; Set the lower 16 bits of the TSS base in the descriptor
     shr rax, 16              ; Shift RAX to get the next 8 bits
-    mov [TssDesc+4], al      ; Set the next 8 bits of the TSS base
+    mov [rdi+4], al      ; Set the next 8 bits of the TSS base
     shr rax, 8               ; Shift again for the next 8 bits
-    mov [TssDesc+7], al      ; Set the next 8 bits of the TSS base
+    mov [rdi+7], al      ; Set the next 8 bits of the TSS base
     shr rax, 8               ; Shift again for the remaining 32 bits
-    mov [TssDesc+8], eax     ; Set the remaining 32 bits of the TSS base
+    mov [rdi+8], eax     ; Set the remaining 32 bits of the TSS base
     mov ax, 0x20             ; Load the TSS segment selector (0x20 corresponds to the TSS entry in the GDT)
     ltr ax                   ; Load the Task Register with the TSS descriptor
 
@@ -86,13 +88,14 @@ InitPIC:                     ; Initialize the Programmable Interrupt Controller 
     mov al, 11111111b        ; Mask all IRQs on slave PIC
     out 0xa1, al             ; Send mask to slave PIC
 
+    mov rax, KernelEntry
     push 8                   ; Push the code segment selector for the kernel (0x08) onto the stack
-    push KernelEntry         ; Push the address of KernelEntry onto the stack
+    push rax                 ; Push the address of KernelEntry onto the stack
     db 0x48                  ; Indicate that we are using 64-bit mode for the far return
     retf                     ; Far return to the KernelEntry in 64-bit mode
 
 KernelEntry:                 ; Kernel entry point
-    mov rsp, 0x200000        ; Set the stack pointer to 2MB
+    mov rsp,0xffff800000200000
     call KMain               ; Call the main kernel function
     sti                      ; Enable interrupts
 

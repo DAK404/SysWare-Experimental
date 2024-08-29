@@ -6,7 +6,7 @@ OUTDIR = ./Binaries
 SRCDIR = ./Source
 
 # Linker script content
-LINKER_SCRIPT = OUTPUT_FORMAT("elf64-x86-64")\nENTRY(start)\n\nSECTIONS\n{\n    . = 0x200000;\n    .text : {\n        *(.text)\n    }\n\n    .rodata : {\n        *(.rodata)\n    }\n\n    . = ALIGN(16);\n    .data : {\n        *(.data)\n    }\n\n    .bss : {\n        *(.bss)\n    }\n}
+LINKER_SCRIPT = OUTPUT_FORMAT("elf64-x86-64")\nENTRY(start)\n\nSECTIONS\n{\n    . = 0xffff800000200000;\n    .text : {\n        *(.text)\n    }\n\n    .rodata : {\n        *(.rodata)\n    }\n\n    . = ALIGN(16);\n    .data : {\n        *(.data)\n    }\n\n    .bss : {\n        *(.bss)\n    }\n}
 
 # Default target
 all: $(OUTDIR)/boot.img
@@ -29,10 +29,11 @@ $(OUTDIR)/main.o: $(SRCDIR)/main.c | $(OUTDIR)
 	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/trap.c -o $(OUTDIR)/trap.o
 	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/print.c -o $(OUTDIR)/print.o
 	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/debug.c -o $(OUTDIR)/debug.o
+	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/memory.c -o $(OUTDIR)/memory.o
 
 # Link kernel components using the linker script
 $(OUTDIR)/kernel.bin: $(OUTDIR)/kernel.o $(OUTDIR)/main.o
-	ld -nostdlib -T <(echo -e "$(LINKER_SCRIPT)") -o $(OUTDIR)/kernel $(OUTDIR)/kernel.o $(OUTDIR)/main.o $(OUTDIR)/trapa.o $(OUTDIR)/trap.o $(OUTDIR)/liba.o $(OUTDIR)/print.o $(OUTDIR)/debug.o
+	ld -nostdlib -T <(echo -e "$(LINKER_SCRIPT)") -o $(OUTDIR)/kernel $(OUTDIR)/kernel.o $(OUTDIR)/main.o $(OUTDIR)/trapa.o $(OUTDIR)/trap.o $(OUTDIR)/liba.o $(OUTDIR)/print.o $(OUTDIR)/debug.o $(OUTDIR)/memory.o
 	objcopy -O binary $(OUTDIR)/kernel $(OUTDIR)/kernel.bin
 
 # Rule to create a blank 10MB boot.img file filled with zeros

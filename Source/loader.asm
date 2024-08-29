@@ -60,28 +60,33 @@ GetMemInfoStart:
     call PrintString            ; Print the message for memory info initialization
 
     ; --- BIOS MEMORY MAP FETCH USING E820 --- ;
-    mov eax, 0xe820             ; Set EAX to 0xe820 for memory map function
-    mov edx, 0x534d4150         ; Set EDX to 'SMAP' signature
-    mov ecx, 20                 ; Set ECX to size of the buffer (20 bytes)
-    mov edi, 0x9000             ; Set EDI to the buffer address for memory map entries
-    xor ebx, ebx                ; Clear EBX (EBX must be zero on the first call)
+    mov eax, 0xe820             ; Set EAX to 0xe820, the BIOS function to get memory map
+    mov edx, 0x534d4150         ; Set EDX to 'SMAP' signature ('SMAP' is required by the E820 call)
+    mov ecx, 20                 ; Set ECX to 20 bytes, the size of each memory map entry structure
+    mov dword[0x9000], 0        ; Clear/initialize memory map counter at address 0x9000
+    mov edi, 0x9008             ; Set EDI to the address 0x9008, where the memory map entries will be stored
+    xor ebx, ebx                ; Clear EBX (EBX must be zero on the first call to indicate start of map)
     int 0x15                    ; Call BIOS interrupt 0x15 to get the memory map
-    jc GetMemoryInfoFailed      ; Jump if carry flag is set (error occurred)
+    jc GetMemoryInfoFailed      ; If the carry flag is set (error), jump to GetMemoryInfoFailed
 
 GetMemInfo:
 
     mov si, GET_MEMORY_INFO     ; Load the address of the memory info message
-    call PrintString            ; Print the memory info message
+    call PrintString            ; Print the memory info message to indicate memory info retrieval process
+    inc dword[0x9000]           ; Increment the memory block count stored at 0x9000 with each retrieved entry
 
-    add edi, 20                 ; Move to the next memory map entry (20-byte size)
-    mov eax, 0xe820             ; Prepare to fetch the next memory map entry
-    mov edx, 0x534d4150         ; Set EDX to 'SMAP' signature
-    mov ecx, 20                 ; Set ECX to the size of the buffer (20 bytes)
-    int 0x15                    ; Call BIOS interrupt to get the memory map
-    jc GetMemDone               ; Jump to finish if carry flag is set (no more entries)
+    test ebx, ebx               ; Test if EBX is zero (EBX is zero when there are no more entries)
+    jz GetMemDone               ; If EBX is zero, jump to finish (no more memory entries to fetch)
 
-    test ebx, ebx               ; Check if EBX is zero (indicating no more entries)
-    jnz GetMemInfo              ; If EBX is not zero, continue fetching memory map
+    add edi, 20                 ; Move EDI to the next 20-byte memory map entry in the buffer
+    mov eax, 0xe820             ; Set EAX to 0xe820, BIOS function to get memory map
+    mov edx, 0x534d4150         ; Set EDX to 'SMAP' signature required by the E820 call
+    mov ecx, 20                 ; Set ECX to 20 bytes, the size of each memory map entry structure
+    int 0x15                    ; Call BIOS interrupt 0x15 to fetch the next memory map entry
+    jc GetMemInfo               ; If the carry flag is set (error), retry fetching the current entry
+
+    test ebx, ebx               ; Test again if EBX is zero (indicating no more entries)
+    jnz GetMemInfo              ; If EBX is not zero, loop back to fetch the next memory map entry
 
 GetMemDone:
 
@@ -235,8 +240,13 @@ StartLongMode:                   ; Prepare to switch to 64-bit Long Mode
     mov ecx, 0x10000/4           ; Set ECX to 0x10000/4 (size of the page table)
     rep stosd                    ; Fill page table with zero (write ECX dwords of zero)
 
-    mov dword[0x70000], 0x71007  ; Setup page directory entry at 0x70000 (maps to 1GB page)
-    mov dword[0x71000], 10000111b ; Setup page table entry with 1GB page mapping and flags
+    mov dword[0x70000], 0x71003  ; Setup page directory entry at 0x70000 (maps to 1GB page)
+    mov dword[0x71000], 10000011b ; Setup page table entry with 1GB page mapping and flags
+
+    mov eax,(0xffff800000000000 >> 39)
+    and eax,0x1ff
+    mov dword[0x70000 + eax*8],0x72003
+    mov dword[0x72000],10000011b
 
     lgdt [Gdt64Ptr]              ; Load Global Descriptor Table for 64-bit mode
 
@@ -274,7 +284,8 @@ LongModeEntry:                   ; Entry point for 64-bit Long Mode
     mov rcx, 51200/8             ; Set RCX to the number of QWORDs to copy (51200 bytes / 8 bytes)
     rep movsq                    ; Copy data from RSI to RDI (RCX QWORDs)
 
-    jmp 0x200000                 ; Jump to the code located at 0x200000 in 64-bit mode
+    mov rax,0xffff800000200000
+    jmp rax
 
 LongModeEnd:
     hlt                          ; Halt the CPU
