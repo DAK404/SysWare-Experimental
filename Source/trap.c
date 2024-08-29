@@ -1,4 +1,4 @@
-#include "trap.h"
+#include "include/trap.h"
 
 static struct IdtPtr idt_pointer;
 static struct IdtEntry vectors[256];

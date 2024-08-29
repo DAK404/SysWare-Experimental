@@ -1,7 +1,7 @@
 #include "stdint.h"
 #include "stdarg.h"
-#include "print.h"
-#include "lib.h"
+#include "include/print.h"
+#include "include/lib.h"
 
 static struct ScreenBuffer screen_buffer = {(char*)0xb8000, 0, 0};
 

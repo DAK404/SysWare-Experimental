@@ -1,6 +1,6 @@
-#include "memory.h"
-#include "print.h"
-#include "debug.h"
+#include "include/memory.h"
+#include "include/print.h"
+#include "include/debug.h"
 
 static struct FreeMemRegion free_mem_region[50];
 

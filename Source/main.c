@@ -1,7 +1,7 @@
-#include "trap.h"
-#include "print.h"
-#include "debug.h"
-#include "memory.h"
+#include "include/trap.h"
+#include "include/print.h"
+#include "include/debug.h"
+#include "include/memory.h"
 
 void KMain(void)
 {
