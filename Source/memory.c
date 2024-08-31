@@ -29,7 +29,7 @@ void init_memory(void)
             total_mem += mem_map[i].length;
             free_region_count++;
         }
-        print("%x  %uKB  %u\n", mem_map[i].address, mem_map[i].length/1024, (uint64_t)mem_map[i].type);
+    print("%x  %uKB  %u\n", mem_map[i].address, mem_map[i].length/1024, (uint64_t)mem_map[i].type);
 	}
     print("------------------------------------\n");
 
