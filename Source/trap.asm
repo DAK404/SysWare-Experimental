@@ -23,6 +23,7 @@ section .text
     global eoi                 ; End of Interrupt handler
     global read_isr            ; Read In-Service Register (ISR)
     global load_idt            ; Load the Interrupt Descriptor Table (IDT)
+    global load_cr3
 
 ; Trap: This is a generic interrupt handler that saves the state of all registers
 Trap:
@@ -182,3 +183,8 @@ read_isr:
 load_idt:
     lidt [rdi]                 ; Load the IDT using the address in rdi
     ret                        ; Return from the function
+
+load_cr3:
+    mov rax,rdi
+    mov cr3,rax
+    ret

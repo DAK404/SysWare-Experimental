@@ -9,5 +9,6 @@ void KMain(void)
    print("%s\n", string);
    
    init_idt();
-   init_memory();
+   init_memory();  
+   init_kvm();
 }

@@ -6,7 +6,7 @@ OUTDIR = ./Binaries
 SRCDIR = ./Source
 
 # Linker script content
-LINKER_SCRIPT = OUTPUT_FORMAT("elf64-x86-64")\nENTRY(start)\n\nSECTIONS\n{\n    . = 0xffff800000200000;\n    .text : {\n        *(.text)\n    }\n\n    .rodata : {\n        *(.rodata)\n    }\n\n    . = ALIGN(16);\n    .data : {\n        *(.data)\n    }\n\n    .bss : {\n        *(.bss)\n    }\n}
+LINKER_SCRIPT = OUTPUT_FORMAT("elf64-x86-64")\nENTRY(start)\n\nSECTIONS\n{\n    . = 0xffff800000200000;\n    .text : {\n        *(.text)\n    }\n\n    .rodata : {\n        *(.rodata)\n    }\n\n    . = ALIGN(16);\n    .data : {\n        *(.data)\n    }\n\n    .bss : {\n        *(.bss)\n    }\nPROVIDE(end = .);\n}
 
 # Default target
 all: $(OUTDIR)/boot.img
