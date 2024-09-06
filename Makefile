@@ -30,10 +30,11 @@ $(OUTDIR)/main.o: $(SRCDIR)/main.c | $(OUTDIR)
 	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/print.c -o $(OUTDIR)/print.o
 	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/debug.c -o $(OUTDIR)/debug.o
 	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/memory.c -o $(OUTDIR)/memory.o
+	gcc -std=c99 -mcmodel=large -ffreestanding -fno-stack-protector -mno-red-zone -c $(SRCDIR)/process.c -o $(OUTDIR)/process.o
 
 # Link kernel components using the linker script
 $(OUTDIR)/kernel.bin: $(OUTDIR)/kernel.o $(OUTDIR)/main.o
-	ld -nostdlib -T <(echo -e "$(LINKER_SCRIPT)") -o $(OUTDIR)/kernel $(OUTDIR)/kernel.o $(OUTDIR)/main.o $(OUTDIR)/trapa.o $(OUTDIR)/trap.o $(OUTDIR)/liba.o $(OUTDIR)/print.o $(OUTDIR)/debug.o $(OUTDIR)/memory.o
+	ld -nostdlib -T <(echo -e "$(LINKER_SCRIPT)") -o $(OUTDIR)/kernel $(OUTDIR)/kernel.o $(OUTDIR)/main.o $(OUTDIR)/trapa.o $(OUTDIR)/trap.o $(OUTDIR)/liba.o $(OUTDIR)/print.o $(OUTDIR)/debug.o $(OUTDIR)/memory.o $(OUTDIR)/process.o
 	objcopy -O binary $(OUTDIR)/kernel $(OUTDIR)/kernel.bin
 
 # Rule to create a blank 10MB boot.img file filled with zeros

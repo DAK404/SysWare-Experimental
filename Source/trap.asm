@@ -24,6 +24,8 @@ section .text
     global read_isr            ; Read In-Service Register (ISR)
     global load_idt            ; Load the Interrupt Descriptor Table (IDT)
     global load_cr3
+    global read_cr2
+    global pstart
 
 ; Trap: This is a generic interrupt handler that saves the state of all registers
 Trap:
@@ -188,3 +190,11 @@ load_cr3:
     mov rax,rdi
     mov cr3,rax
     ret
+
+read_cr2:
+    mov rax, cr2
+    ret
+
+pstart:
+    mov rsp, rdi
+    jmp TrapReturn

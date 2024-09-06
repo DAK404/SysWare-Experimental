@@ -1,4 +1,5 @@
 section .data                ; Data section starts here
+global Tss
 
 Gdt64:                       ; 64-bit Global Descriptor Table (GDT) starts here
     dq 0                     ; Null descriptor (first entry is always unused)

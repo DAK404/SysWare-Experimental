@@ -182,7 +182,7 @@ void init_kvm(void)
     uint64_t page_map = setup_kvm();
     ASSERT(page_map != 0);
     switch_vm(page_map);
-    print("Memory Manager: Activated");
+    print("Memory Manager: Activated\n");
 }
 
 bool setup_uvm(uint64_t map, uint64_t start, int size)

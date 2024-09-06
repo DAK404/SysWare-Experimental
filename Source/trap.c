@@ -1,4 +1,5 @@
 #include "include/trap.h"
+#include "include/print.h"
 
 static struct IdtPtr idt_pointer;
 static struct IdtEntry vectors[256];
@@ -51,12 +52,15 @@ void handler(struct TrapFrame *tf)
             
         case 39:
             isr_value = read_isr();
-            if ((isr_value&(1<<7)) != 0) {
+            if ((isr_value&(1<<7)) != 0)
+            {
                 eoi();
             }
             break;
 
         default:
+            //print("[Error %d at ring %d] %d:%x %x", tf->trapno, (tf->cs & 3), tf->errorcode, read_cr2(), tf->rip);
+            print("[   ERROR   ] \nProcess Trap Number: %d\nRing: %d\nError Code: %d\nAddress: %x %x", tf->trapno, (tf->cs & 3), tf->errorcode, read_cr2(), tf->rip);
             while (1) { }
     }
 }

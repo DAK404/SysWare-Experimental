@@ -2,6 +2,7 @@
 #include "include/print.h"
 #include "include/debug.h"
 #include "include/memory.h"
+#include "include/process.h"
 
 void KMain(void)
 {
@@ -11,4 +12,7 @@ void KMain(void)
    init_idt();
    init_memory();  
    init_kvm();
+
+   init_process();
+   launch();
 }
