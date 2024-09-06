@@ -1,11 +1,7 @@
 #include "stdint.h"
 #include "stdarg.h"
 
-#include "include/print.h"
-#include "include/lib.h"
-#include "include/memory.h"
-
-static struct ScreenBuffer screen_buffer = {(char*)P2V(0xb8000), 0, 0};
+extern int writeu(char *buffer, int buffer_size);
 
 static int udecimal_to_string(char *buffer, int position, uint64_t digits)
 {
@@ -70,41 +66,7 @@ static int read_string(char *buffer, int position, const char *string)
     return index;
 }
 
-void write_screen(const char *buffer, int size, char color)
-{
-    struct ScreenBuffer *sb = &screen_buffer;
-    int column = sb->column;
-    int row = sb->row;
-
-    for (int i = 0; i < size; i++) {       
-        if (row >= 25) {
-            memcpy(sb->buffer,sb->buffer+LINE_SIZE,LINE_SIZE*24);
-            memset(sb->buffer+LINE_SIZE*24,0,LINE_SIZE);
-            row--;
-        }
-        
-        if (buffer[i] == '\n') {
-            column = 0;
-            row++;
-        } 
-        else {
-            sb->buffer[column*2+row*LINE_SIZE] = buffer[i];
-            sb->buffer[column*2+row*LINE_SIZE+1] = color;
-
-            column++;
-
-            if (column >= 80) {
-                column=0;
-                row++;
-            }
-        }
-    }
-
-    sb->column = column;
-    sb->row = row;
-}
-
-int print(const char *format, ...)
+int printf(const char *format, ...)
 {
     char buffer[1024];
     int buffer_size = 0;
@@ -147,7 +109,7 @@ int print(const char *format, ...)
         }     
     }
 
-    write_screen(buffer, buffer_size, 0xf);
+    buffer_size = writeu(buffer, buffer_size);
     va_end(args);
 
     return buffer_size;

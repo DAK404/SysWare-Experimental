@@ -64,6 +64,9 @@ void vector18(void);
 void vector19(void);
 void vector32(void);
 void vector39(void);
+
+void sysint(void);
+
 void init_idt(void);
 void eoi(void);
 void load_idt(struct IdtPtr *ptr);

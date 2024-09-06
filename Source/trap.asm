@@ -27,6 +27,8 @@ section .text
     global read_cr2
     global pstart
 
+    global sysint
+
 ; Trap: This is a generic interrupt handler that saves the state of all registers
 Trap:
     push rax                   ; Save general-purpose registers
@@ -164,6 +166,11 @@ vector32:
 vector39:
     push 0                     ; IRQ 7 (Parallel port interrupt)
     push 39                    ; Push interrupt number 39
+    jmp Trap
+
+sysint:
+    push 0
+    push 0x80
     jmp Trap
 
 ; End of Interrupt (EOI) handler: Sends EOI signal to the Programmable Interrupt Controller (PIC)
